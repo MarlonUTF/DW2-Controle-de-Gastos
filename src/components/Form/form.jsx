@@ -1,21 +1,44 @@
 import { useState } from "react";
-import Grid from "../Grid/grid";
+import AlertComponent from "../Utilitarios/alert";
 
 export default function Form({ handleAdd, transactionsList, setTransactionsList }) {
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
+  const [data, setData] = useState("");
   const [isExpense, setExpense] = useState(false);
+
+  // Estado para controlar o alerta
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("error");
 
   function generateID() {
     return Math.round(Math.random() * 1000);
   }
 
   function handleSave() {
-    if (!desc || !amount) {
-      alert("Informe a descrição e o valor!");
+    if (!desc || !amount ) {
+      setAlertMessage("Informe a descrição!");
+      setAlertSeverity("warning");
+      setAlertOpen(true);
       return;
-    } else if (amount < 1) {
-      alert("O valor tem que ser positivo!");
+    }
+    else if (!amount) {
+      setAlertMessage("Informe o valor!");
+      setAlertSeverity("warning");
+      setAlertOpen(true);
+      return;
+    }
+    else if (!data) {
+      setAlertMessage("Informe a data!");
+      setAlertSeverity("warning");
+      setAlertOpen(true);
+      return;
+    }
+    else if (amount < 0 ) {
+      setAlertMessage("O valor tem que ser positivo!");
+      setAlertSeverity("error");
+      setAlertOpen(true);
       return;
     }
 
@@ -23,6 +46,7 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
       id: generateID(),
       desc: desc,
       amount: Number(amount),
+      data: data,
       expense: isExpense,
     };
 
@@ -30,12 +54,28 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
 
     setDesc("");
     setAmount("");
+    setData("");
     setExpense(false);
+
+    setAlertMessage("Transação adicionada com sucesso!");
+    setAlertSeverity("success");
+    setAlertOpen(true);
   }
 
   return (
     <>
-      <div className="max-w-[1120px] w-[98%] mx-auto mt-18 bg-white shadow-md rounded-md p-4 flex flex-wrap items-center justify-center gap-4 border border-gray-200">
+      {/* Alerta com Material UI */}
+      <div className="max-w-[1120px] w-[98%] mx-auto mt-18">
+        <AlertComponent
+          open={alertOpen}
+          setOpen={setAlertOpen}
+          message={alertMessage}
+          severity={alertSeverity}
+        />
+      </div>
+
+      {/* Formulário */}
+      <div className="max-w-[1120px] w-[98%] mx-auto mt-6 bg-white shadow-md rounded-md p-4 flex flex-wrap items-center justify-center gap-4 border border-gray-200">
         {/* Descrição */}
         <div className="flex flex-col w-full sm:w-[30%]">
           <label className="text-sm font-medium mb-1">Descrição</label>
@@ -55,6 +95,17 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
             type="number"
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Ex: 100"
+            className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+          />
+        </div>
+
+        {/* Data */}
+        <div className="flex flex-col w-full sm:w-[20%]">
+          <label className="text-sm font-medium mb-1">Data</label>
+          <input
+            value={data}
+            type="date"
+            onChange={(e) => setData(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
           />
         </div>
@@ -93,9 +144,7 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
         >
           ADICIONAR
         </button>
-      </div>
-
-      <Grid itens={transactionsList} setItens={setTransactionsList} />
+      </div>      
     </>
   );
 }

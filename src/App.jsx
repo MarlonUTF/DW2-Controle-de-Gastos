@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Header from "./components/Header/header";
 import Form from "./components/Form/form";
+import Grid from "./components/Grid/grid";
+import Menu from "./components/Menu/menu"
 
 const App = () => {
   const data = localStorage.getItem("transactions");
@@ -37,14 +39,18 @@ const App = () => {
   };
 
   return (
-    <>
-      <Header income={income} expense={expense} total={total}/>
-      <Form
-        handleAdd={handleAdd}
-        transactionsList={transactionsList}
-        setTransactionsList={setTransactionsList}
-      />
-    </>
+    <div className="flex h-[100%] w-[100%]">
+      <div className="w-[100%] h-dvh  overflow-auto">
+        <Header income={income} expense={expense} total={total}/>
+        <Form
+          handleAdd={handleAdd}
+          transactionsList={transactionsList}
+          setTransactionsList={setTransactionsList}
+        />
+        <Grid itens={transactionsList} setItens={setTransactionsList} />
+      </div>
+      <Menu />
+    </div>
   );
 };
 
