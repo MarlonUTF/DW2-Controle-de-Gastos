@@ -21,6 +21,7 @@ export default function Grid({ itens, setItens }) {
             <th className="w-2/5 py-2 px-4 text-left">Descrição</th>
             <th className="w-2/5 py-2 px-4 text-left">Valor</th>
             <th className="w-2/5 py-2 px-4 text-left">Data</th>
+            <th className="w-2/5 py-2 px-4 text-left">Categoria</th>
             <th className="w-1/10 py-2 px-4 text-center">Tipo</th>
             <th className="w-1/10 py-2 px-4"></th>
           </tr>

@@ -1,43 +1,52 @@
 import { useState } from "react";
 import AlertComponent from "../Utilitarios/alert";
+import CategoriaDespesa from "./categoriaDespesa";
+import CategoriaEntrada from "./categoriaEntrada";
+
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
 
 export default function Form({ handleAdd, transactionsList, setTransactionsList }) {
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
-  const [data, setData] = useState("");
-  const [isExpense, setExpense] = useState(false);
+  const today = new Date().toISOString().split("T")[0];
+  const [data, setData] = useState(today);
+  const [isExpense, setExpense] = useState(true);
+  const [categoria, setCategoria] = useState('');
+  const [subCategoria, setSubCategoria] = useState('');
 
-  // Estado para controlar o alerta
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
   function generateID() {
-    return Math.round(Math.random() * 1000);
+    return Date.now() + Math.floor(Math.random() * 1000);
   }
 
   function handleSave() {
-    if (!desc || !amount ) {
+    if (!desc.trim()) {
       setAlertMessage("Informe a descrição!");
       setAlertSeverity("warning");
       setAlertOpen(true);
       return;
     }
-    else if (!amount) {
-      setAlertMessage("Informe o valor!");
+    else if (!amount || Number(amount) <= 0) {
+      setAlertMessage("Informe um valor válido!");
       setAlertSeverity("warning");
       setAlertOpen(true);
       return;
     }
-    else if (!data) {
-      setAlertMessage("Informe a data!");
+    else if (!categoria) {
+      setAlertMessage("Selecione uma categoria!");
       setAlertSeverity("warning");
       setAlertOpen(true);
       return;
     }
-    else if (amount < 0 ) {
-      setAlertMessage("O valor tem que ser positivo!");
-      setAlertSeverity("error");
+    else if (categoria === 'alimentacao' && !subCategoria) {
+      setAlertMessage("Selecione uma Sub Categoria!");
+      setAlertSeverity("warning");
       setAlertOpen(true);
       return;
     }
@@ -48,14 +57,18 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
       amount: Number(amount),
       data: data,
       expense: isExpense,
+      categoria: categoria,
+      subCategoria: (isExpense && categoria === 'alimentacao') ? subCategoria : null
     };
 
     handleAdd(transaction);
 
     setDesc("");
     setAmount("");
-    setData("");
-    setExpense(false);
+    setData(today);
+    setExpense(true);
+    setCategoria('');
+    setSubCategoria('');
 
     setAlertMessage("Transação adicionada com sucesso!");
     setAlertSeverity("success");
@@ -64,7 +77,6 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
 
   return (
     <>
-      {/* Alerta com Material UI */}
       <div className="max-w-[1120px] w-[98%] mx-auto mt-18">
         <AlertComponent
           open={alertOpen}
@@ -74,76 +86,97 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
         />
       </div>
 
-      {/* Formulário */}
-      <div className="max-w-[1120px] w-[98%] mx-auto mt-6 bg-white shadow-md rounded-md p-4 flex flex-wrap items-center justify-center gap-4 border border-gray-200">
-        {/* Descrição */}
-        <div className="flex flex-col w-full sm:w-[30%]">
-          <label className="text-sm font-medium mb-1">Descrição</label>
-          <input
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-            placeholder="Ex: Salário, Conta de luz..."
-            className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-          />
-        </div>
-
-        {/* Valor */}
-        <div className="flex flex-col w-full sm:w-[20%]">
-          <label className="text-sm font-medium mb-1">Valor</label>
-          <input
-            value={amount}
-            type="number"
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="Ex: 100"
-            className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-          />
-        </div>
-
-        {/* Data */}
-        <div className="flex flex-col w-full sm:w-[20%]">
-          <label className="text-sm font-medium mb-1">Data</label>
-          <input
-            value={data}
-            type="date"
-            onChange={(e) => setData(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-          />
-        </div>
-
-        {/* Tipo de transação */}
-        <div className="flex gap-4 w-full sm:w-auto justify-center items-center">
-          <div className="flex items-center gap-1">
+      {/* Container principal com layout mais harmonioso */}
+      <div className="max-w-[1120px] w-[98%] mx-auto mt-6 bg-white shadow-md rounded-md p-4 border border-gray-200">
+        {/* Linha superior: campos de entrada */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">Descrição</label>
             <input
-              type="radio"
-              id="rIncome"
-              checked={!isExpense}
-              name="group1"
-              onChange={() => setExpense(false)}
-              className="accent-teal-600"
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              placeholder="Ex: Salário, Conta de luz..."
+              className="h-13 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
             />
-            <label htmlFor="rIncome" className="text-sm">Entrada</label>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">Valor</label>
             <input
-              type="radio"
-              id="rExpenses"
-              checked={isExpense}
-              name="group1"
-              onChange={() => setExpense(true)}
-              className="accent-teal-600"
+              value={amount}
+              type="number"
+              min="0.01"
+              step="0.01"
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Ex: 100.00"
+              className="h-13 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
             />
-            <label htmlFor="rExpenses" className="text-sm">Saída</label>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">Data</label>
+            <input
+              value={data}
+              type="date"
+              onChange={(e) => setData(e.target.value)}
+              className="h-13 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+            />
           </div>
         </div>
 
-        {/* Botão Adicionar */}
-        <button
-          onClick={handleSave}
-          className="h-[42px] px-4 text-sm font-medium bg-teal-600 text-white rounded hover:bg-teal-700 transition-colors w-full sm:w-auto"
-        >
-          ADICIONAR
-        </button>
+        {/* Linha inferior: tipo, categorias e botão - agora com melhor alinhamento */}
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="flex flex-col flex-grow min-w-[250px]">
+            <label className="text-sm font-medium mb-1 block">Tipo de Transação</label>
+            <FormControl>
+              <RadioGroup
+                row
+                aria-labelledby="tipo-label"
+                name="tipo"
+                value={isExpense ? "saida" : "entrada"}
+                onChange={(e) => setExpense(e.target.value === "saida")}
+                sx={{ gap: 2 }}
+              >
+                <FormControlLabel 
+                  value="saida" 
+                  control={<Radio size="small" />} 
+                  label="Saída" 
+                  className="mr-4"
+                />
+                <FormControlLabel 
+                  value="entrada" 
+                  control={<Radio size="small" />} 
+                  label="Entrada" 
+                />
+              </RadioGroup>
+            </FormControl>
+          </div>
+
+          <div className="flex-grow-[2] min-w-[300px]">
+            {isExpense ? 
+              <CategoriaDespesa 
+                setCategoria={setCategoria} 
+                setSubCategoria={setSubCategoria}
+                categoria={categoria}
+                subCategoria={subCategoria}
+              /> 
+              : 
+              <CategoriaEntrada 
+                setCategoria={setCategoria} 
+                categoria={categoria}
+              />
+            }
+          </div>
+
+          <div className="flex-shrink-0">
+            <button
+              onClick={handleSave}
+              className="h-12 px-6 text-sm font-medium bg-teal-600 text-white rounded hover:bg-teal-700 transition-colors w-full"
+            >
+              ADICIONAR
+            </button>
+          </div>
+        </div>
       </div>      
     </>
   );

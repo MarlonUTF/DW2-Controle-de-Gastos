@@ -15,6 +15,8 @@ export default function GridItem({ item, onDelete }) {
 
       <td className="py-2 px-4 text-sm text-gray-800">{item.data}</td>
 
+      <td className="py-2 px-4 text-sm text-gray-800">{item.categoria}/{item.subCategoria}</td>
+
       <td className="py-2 px-4 text-center">
         {item.expense ? (
           <FaRegArrowAltCircleDown className="text-red-500 inline-block" />
