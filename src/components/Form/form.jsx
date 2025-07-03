@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AlertComponent from "../Utilitarios/alert";
 import CategoriaDespesa from "./categoriaDespesa";
 import CategoriaEntrada from "./categoriaEntrada";
@@ -8,66 +8,93 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 
-export default function Form({ handleAdd, transactionsList, setTransactionsList }) {
+export default function Form({ handleAdd }) {
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
   const today = new Date().toISOString().split("T")[0];
   const [data, setData] = useState(today);
   const [isExpense, setExpense] = useState(true);
-  const [categoria, setCategoria] = useState('');
+  
+  // Estado único para categoria com controle de tipo
+  const [categoria, setCategoria] = useState({
+    value: '',
+    type: 'despesa' // ou 'entrada'
+  });
+  
   const [subCategoria, setSubCategoria] = useState('');
 
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
+  // Atualiza o tipo de categoria quando muda o tipo de transação
+  useEffect(() => {
+    setCategoria(prev => ({
+      ...prev,
+      type: isExpense ? 'despesa' : 'entrada'
+    }));
+  }, [isExpense]);
+
+  const handleSetCategoria = (value) => {
+    setCategoria(prev => ({
+      ...prev,
+      value
+    }));
+  };
+
   function generateID() {
     return Date.now() + Math.floor(Math.random() * 1000);
   }
 
   function handleSave() {
+    // Validações
     if (!desc.trim()) {
       setAlertMessage("Informe a descrição!");
       setAlertSeverity("warning");
       setAlertOpen(true);
       return;
     }
-    else if (!amount || Number(amount) <= 0) {
+    
+    if (!amount || Number(amount) <= 0) {
       setAlertMessage("Informe um valor válido!");
       setAlertSeverity("warning");
       setAlertOpen(true);
       return;
     }
-    else if (!categoria) {
+    
+    if (!categoria.value) {
       setAlertMessage("Selecione uma categoria!");
       setAlertSeverity("warning");
       setAlertOpen(true);
       return;
     }
-    else if (categoria === 'alimentacao' && !subCategoria) {
+    
+    if (isExpense && categoria.value === 'alimentacao' && !subCategoria) {
       setAlertMessage("Selecione uma Sub Categoria!");
       setAlertSeverity("warning");
       setAlertOpen(true);
       return;
     }
 
+    // Criar transação
     const transaction = {
       id: generateID(),
       desc: desc,
       amount: Number(amount),
       data: data,
       expense: isExpense,
-      categoria: categoria,
-      subCategoria: (isExpense && categoria === 'alimentacao') ? subCategoria : null
+      categoria: categoria.value,
+      subCategoria: (isExpense && categoria.value === 'alimentacao') ? subCategoria : null
     };
 
     handleAdd(transaction);
 
+    // Resetar formulário
     setDesc("");
     setAmount("");
     setData(today);
     setExpense(true);
-    setCategoria('');
+    setCategoria({ value: '', type: 'despesa' });
     setSubCategoria('');
 
     setAlertMessage("Transação adicionada com sucesso!");
@@ -86,9 +113,7 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
         />
       </div>
 
-      {/* Container principal com layout mais harmonioso */}
       <div className="max-w-[1120px] w-[98%] mx-auto mt-6 bg-white shadow-md rounded-md p-4 border border-gray-200">
-        {/* Linha superior: campos de entrada */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div className="flex flex-col">
             <label className="text-sm font-medium mb-1">Descrição</label>
@@ -124,7 +149,6 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
           </div>
         </div>
 
-        {/* Linha inferior: tipo, categorias e botão - agora com melhor alinhamento */}
         <div className="flex flex-wrap items-end gap-4">
           <div className="flex flex-col flex-grow min-w-[250px]">
             <label className="text-sm font-medium mb-1 block">Tipo de Transação</label>
@@ -155,15 +179,15 @@ export default function Form({ handleAdd, transactionsList, setTransactionsList 
           <div className="flex-grow-[2] min-w-[300px]">
             {isExpense ? 
               <CategoriaDespesa 
-                setCategoria={setCategoria} 
+                setCategoria={handleSetCategoria} 
                 setSubCategoria={setSubCategoria}
-                categoria={categoria}
+                categoria={categoria.type === 'despesa' ? categoria.value : ''}
                 subCategoria={subCategoria}
               /> 
               : 
               <CategoriaEntrada 
-                setCategoria={setCategoria} 
-                categoria={categoria}
+                setCategoria={handleSetCategoria} 
+                categoria={categoria.type === 'entrada' ? categoria.value : ''}
               />
             }
           </div>

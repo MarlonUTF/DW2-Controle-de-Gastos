@@ -1,11 +1,18 @@
-export default function ResumeItem({ title, Icon, value }) {
+export default function ResumeItem({ title, Icon, value, colorClass = "text-black" }) {
+  // Garantir que valores negativos sejam mostrados em vermelho
+  const displayValue = value.startsWith("-") 
+    ? `-${value.replace("-", "")}` 
+    : value;
+
   return (
-    <div className="bg-white w-full p-6 rounded-xl text-center shadow-md">
+    <div className="bg-white w-full p-4 rounded-xl text-center shadow-lg transition-all hover:shadow-xl hover:-translate-y-1">
       <header className="flex justify-center items-center gap-2 mb-2">
-        <p className="text-gray-500">{title}</p>
-        <Icon size={22} className="text-teal-800" />
+        <p className="text-gray-500 text-sm md:text-base">{title}</p>
+        <Icon className="text-teal-800" size={20} />
       </header>
-      <p className="text-2xl font-bold text-black">{value}</p>
+      <p className={`text-xl md:text-2xl font-bold ${colorClass} truncate`} title={value}>
+        {displayValue}
+      </p>
     </div>
   );
 }

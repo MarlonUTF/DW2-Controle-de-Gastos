@@ -1,38 +1,52 @@
-import GridItem from './gridItem';
+import React from "react";
+import GridItem from "./GridItem";
 
-export default function Grid({ itens, setItens }) {
-  const onDelete = (ID) => {
-    const newArray = itens.filter((transaction) => transaction.id !== ID);
-    setItens(newArray);
-    localStorage.setItem("transactions", JSON.stringify(newArray));
-  };
-
-  if(itens.length==0){
-    return(
-      <div className='w-[98%] max-w-[1120px] mx-auto mt-7 flex justify-center items-center col-span-4 text-gray-600 p-4 border border-gray-600 rounded-2xl'>Nenhuma transação registrada</div>
-    )
-  }
-
+export default function Grid({ itens, onDelete, onEdit }) {
   return (
-    <div className='w-[98%] max-w-[1120px] mx-auto mt-7'>
-      <table className="w-full table-auto border-collapse border border-gray-300 rounded-lg overflow-hidden mt-4">
-        <thead>
-          <tr className="bg-gray-100 text-gray-700">
-            <th className="w-2/5 py-2 px-4 text-left">Descrição</th>
-            <th className="w-2/5 py-2 px-4 text-left">Valor</th>
-            <th className="w-2/5 py-2 px-4 text-left">Data</th>
-            <th className="w-2/5 py-2 px-4 text-left">Categoria</th>
-            <th className="w-1/10 py-2 px-4 text-center">Tipo</th>
-            <th className="w-1/10 py-2 px-4"></th>
+    <div className="w-full max-w-[1120px] mt-8 overflow-x-auto">
+      <table className="min-w-full border border-gray-200 rounded-lg">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Descrição</th>
+            <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Valor</th>
+            <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Data</th>
+            <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Categoria</th>
+            <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">Ações</th>
           </tr>
         </thead>
         <tbody>
-          {itens?.map((item, index) => (
-            <GridItem key={index} item={item} onDelete={onDelete} />
-          ))}
+          {itens.length > 0 ? (
+            itens.map((item) => {
+              // Verificação crucial: garantir que o item tenha ID
+              if (!item.id) {
+                console.warn("Item sem ID:", item);
+                return null;
+              }
+              
+              // Garantir que o ID seja string
+              const safeItem = {
+                ...item,
+                id: String(item.id).trim()
+              };
+              
+              return (
+                <GridItem 
+                  key={safeItem.id} 
+                  item={safeItem} 
+                  onDelete={onDelete}
+                  onEdit={onEdit}
+                />
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                Nenhuma transação encontrada
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
   );
 }
-

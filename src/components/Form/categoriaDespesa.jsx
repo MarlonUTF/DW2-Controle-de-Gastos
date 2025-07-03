@@ -5,7 +5,6 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
 export default function CategoriaDespesa({ setCategoria, setSubCategoria, categoria, subCategoria }) {
-
   const handleCategoriaChange = (event) => {
     setCategoria(event.target.value);
     if(event.target.value !== 'alimentacao') {
@@ -19,7 +18,7 @@ export default function CategoriaDespesa({ setCategoria, setSubCategoria, catego
 
   return (
     <div className='flex gap-6'>
-      <FormControl className='w-60'>
+      <FormControl className='w-60' fullWidth>
         <InputLabel id="categoria-label">Categoria</InputLabel>
         <Select
           labelId="categoria-label"
@@ -41,7 +40,7 @@ export default function CategoriaDespesa({ setCategoria, setSubCategoria, catego
       </FormControl>
 
       {categoria === 'alimentacao' && (
-        <FormControl className='w-60'>
+        <FormControl className='w-60' fullWidth>
           <InputLabel id="subcategoria-label">Sub Categoria</InputLabel>
           <Select
             labelId="subcategoria-label"
