@@ -1,6 +1,6 @@
 # 💸 Controle de Gastos Pessoais
 
-Aplicação web desenvolvida com **React + Firebase** para ajudar usuários a registrarem, organizarem e visualizarem suas despesas mensais, com interface moderna e um assistente virtual integrado por IA (Gemini).
+Este projeto é um sistema simples de gerenciamento financeiro desenvolvido em React, com integração ao Firebase para armazenamento de transações. Permite adicionar, editar e excluir transações financeiras, classificadas como entradas ou despesas, com categorias e subcategorias.
 
 ---
 
@@ -23,6 +23,36 @@ Aplicação web desenvolvida com **React + Firebase** para ajudar usuários a re
 | React + Vite     | Interface e estrutura moderna do front-end           |
 | Firebase         | Autenticação e banco de dados em nuvem (Firestore)   |
 | Tailwind CSS     | Estilização rápida, responsiva e baseada em utilitários |
+| date-fns | Formatação das Datas |
 | LocalStorage     | Armazenamento local de sessões                        |
-| Gemini API       | Chat de IA com sugestões de finanças                  |
-| Chart.js / Recharts | Gráficos interativos de barras, pizza e linha      |
+| Gemini API (a ser implementada)  | Chat de IA com sugestões de finanças                  |
+| Chart.js / Recharts (a ser implementado)| Gráficos interativos de barras, pizza e linha      |
+
+## Funcionalidades
+
+- Cadastro de transações com descrição, valor, data, categoria, subcategoria e tipo (entrada ou despesa).
+- Validações para garantir dados consistentes.
+- Armazenamento em tempo real no Firebase Firestore.
+- Feedback visual com alertas para sucesso e erros.
+- Interface responsiva com Material-UI e Tailwind CSS.
+
+---
+
+## Estrutura do Firebase Firestore
+
+Coleção: `transactions`
+
+Cada documento representa uma transação e possui os seguintes campos:
+
+| Campo        | Tipo       | Descrição                               |
+|--------------|------------|---------------------------------------|
+| `amount`     | Number     | Valor da transação                     |
+| `categoria`  | String     | Categoria da transação (ex: alimentacao, fixo) |
+| `createdAt`  | Timestamp  | Data de criação do documento           |
+| `data`       | Timestamp  | Data da transação                      |
+| `desc`       | String     | Descrição da transação                 |
+| `expense`    | Boolean    | True se for despesa, False se entrada  |
+| `subCategoria` | String   | Subcategoria (ex: feira, mercado)     |
+| `userId`     | String     | ID do usuário que criou a transação   |
+
+
