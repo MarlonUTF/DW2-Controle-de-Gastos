@@ -1,9 +1,12 @@
-import React, { useEffect, useState, useContext } from "react";
+// Importa hooks do React e componentes do projeto
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import Header from "../components/Header/header";
 import Form from "../components/Form/form";
 import Grid from "../components/Grid/grid";
 import { AuthContext } from '../contexts/AuthContext';
 import { db } from '../firebase';
+
+// Importa funções do Firestore para manipulação de dados em tempo real
 import { 
   collection, 
   query, 
@@ -18,7 +21,7 @@ import {
 
 import Menu from "../components/Menu/menu";
 
-// Função para formatação monetária
+// Função para formatar valores numéricos como moeda brasileira (R$)
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -26,16 +29,38 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
+// Função pura que ordena transações por data (mais recentes primeiro)
+const sortTransactionsByDate = (transactions) => {
+  return [...transactions].sort((a, b) => {
+    const dateA = a.data instanceof Date ? a.data : new Date(a.data);
+    const dateB = b.data instanceof Date ? b.data : new Date(b.data);
+
+    if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
+    if (isNaN(dateA.getTime())) return 1;
+    if (isNaN(dateB.getTime())) return -1;
+
+    return dateB - dateA; // mais recentes primeiro
+  });
+};
+
+// Componente principal da página inicial
 export default function Home() {
-  const { currentUser } = useContext(AuthContext);
-  const [transactionsList, setTransactionsList] = useState([]);
+  const { currentUser } = useContext(AuthContext); // obtém usuário autenticado
+  const [rawTransactions, setRawTransactions] = useState([]); // dados brutos
+  const [transactionsList, setTransactionsList] = useState([]); // dados ordenados
   const [income, setIncome] = useState(formatCurrency(0));
   const [expense, setExpense] = useState(formatCurrency(0));
   const [total, setTotal] = useState(formatCurrency(0));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Carregar transações do Firestore
+  // Reordena e atualiza a lista de transações ordenadas
+  const sortAndSetTransactions = useCallback(() => {
+    const sorted = sortTransactionsByDate(rawTransactions);
+    setTransactionsList(sorted);
+  }, [rawTransactions]);
+
+  // Carrega as transações do Firestore em tempo real
   useEffect(() => {
     if (!currentUser) {
       setLoading(false);
@@ -45,36 +70,27 @@ export default function Home() {
     setLoading(true);
     const q = query(
       collection(db, "transactions"),
-      where("userId", "==", currentUser.uid)
+      where("userId", "==", currentUser.uid) // filtra pelas transações do usuário logado
     );
 
+    // onSnapshot escuta alterações em tempo real
     const unsubscribe = onSnapshot(q, 
       (querySnapshot) => {
         const transactions = [];
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          
-          // Garantir conversão correta de datas
-          const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt;
+
           const transactionDate = data.data?.toDate ? data.data.toDate() : data.data;
-          
+
           transactions.push({ 
-            id: doc.id, // ID do documento (string)
+            id: doc.id,
             ...data,
             data: transactionDate,
-            createdAt: createdAt
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt
           });
         });
-        
-        // ORDENAÇÃO ALTERADA: Agora por data da transação (mais recente primeiro)
-        transactions.sort((a, b) => {
-          // Se alguma data for inválida, coloca no final
-          if (!(a.data instanceof Date)) return 1;
-          if (!(b.data instanceof Date)) return -1;
-          return b.data - a.data;
-        });
-        
-        setTransactionsList(transactions);
+
+        setRawTransactions(transactions); // atualiza estado
         setLoading(false);
       },
       (error) => {
@@ -83,10 +99,16 @@ export default function Home() {
       }
     );
 
+    // Encerra escuta ao desmontar componente
     return () => unsubscribe();
   }, [currentUser]);
 
-  // Calcular totais
+  // Reordena transações sempre que a lista bruta muda
+  useEffect(() => {
+    sortAndSetTransactions();
+  }, [rawTransactions, sortAndSetTransactions]);
+
+  // Calcula os totais de entradas, saídas e saldo
   useEffect(() => {
     if (transactionsList.length === 0) {
       setIncome(formatCurrency(0));
@@ -112,20 +134,16 @@ export default function Home() {
     setTotal(`${balance < 0 ? "-" : ""}${formatCurrency(Math.abs(balance))}`);
   }, [transactionsList]);
 
-  useEffect(() => {
-    console.log("Usuário atual:", currentUser?.uid);
-  }, [currentUser]);
-
-  // Adicionar transação
+  // Adiciona nova transação no Firestore
   const handleAdd = async (transaction) => {
     if (!currentUser) return;
 
     try {
       const { id, ...cleanTransaction } = transaction;
-      
+
       await addDoc(collection(db, "transactions"), {
         ...cleanTransaction,
-        userId: currentUser.uid, // Garantir que userId está sendo enviado
+        userId: currentUser.uid,
         createdAt: serverTimestamp()
       });
     } catch (error) {
@@ -134,17 +152,16 @@ export default function Home() {
     }
   };
 
-  // Excluir transação
+  // Exclui transação pelo ID
   const handleDelete = async (id) => {
     try {
-      // Garantir que ID seja string
       const idString = String(id).trim();
-      
+
       if (!idString) {
         console.error("ID inválido para exclusão: vazio");
         return;
       }
-      
+
       await deleteDoc(doc(db, "transactions", idString));
     } catch (error) {
       console.error("Erro ao excluir transação: ", error);
@@ -152,17 +169,17 @@ export default function Home() {
     }
   };
 
-  // Atualizar transação
+  // Atualiza transação existente no Firestore
   const handleEdit = async (updatedItem) => {
     if (!currentUser) return;
 
     try {
       const idString = String(updatedItem.id).trim();
       const { id, ...updateData } = updatedItem;
-      
+
       await updateDoc(doc(db, "transactions", idString), {
         ...updateData,
-        userId: currentUser.uid // Manter userId durante atualizações
+        userId: currentUser.uid
       });
     } catch (error) {
       console.error("Erro ao atualizar transação: ", error);
@@ -170,6 +187,7 @@ export default function Home() {
     }
   };
 
+  // Mostra tela de carregamento enquanto busca os dados
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -178,8 +196,10 @@ export default function Home() {
     );
   }
 
+  // Renderização principal da página
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Alerta de erro no topo da tela */}
       {error && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
@@ -193,13 +213,15 @@ export default function Home() {
           </div>
         </div>
       )}
-      
+
+      {/* Conteúdo principal */}
       <div className="flex-grow">
         <Header income={income} expense={expense} total={total} />
-        
-        <div className="mt-24 mb-8 px-4 flex flex-col items-center">
+
+        <div className="mt-24 mb-8 px-4 flex flex-col items-center justify-start">
           <Form handleAdd={handleAdd} />
-          
+
+          {/* Condicional: lista ou mensagem vazia */}
           {transactionsList.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">

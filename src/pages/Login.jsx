@@ -1,30 +1,47 @@
+// Importa função de login com popup do Firebase e o provedor do Google
 import { signInWithPopup, googleProvider } from "../firebase";
+
+// Importa a instância de autenticação do Firebase
 import { auth } from "../firebase";
+
+// Importa hook do React Router para redirecionar após login
 import { useNavigate } from 'react-router-dom';
 
+// Componente funcional da página de login
 export default function Login() {
+  // Hook para navegação programada (redirecionamento)
   const navigate = useNavigate();
 
+  // Função executada ao clicar no botão de login
   const handleLogin = async () => {
     try {
+      // Tenta autenticar o usuário com o popup do Google
       await signInWithPopup(auth, googleProvider);
-      navigate('/'); // Redireciona para a página inicial após o login
+
+      // Redireciona para a página inicial ("/") após login bem-sucedido
+      navigate('/');
     } catch (error) {
+      // Em caso de erro, exibe no console
       console.error("Erro no login:", error);
     }
   };
 
+  // Retorno do componente JSX
   return (
+    // Container principal com estilização (centraliza o conteúdo na tela)
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        {/* Título da página */}
         <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">
           Controle de Gastos
         </h2>
         
+        {/* Botão de login com Google, estilizado com Tailwind */}
         <button
           onClick={handleLogin}
           className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
+          {/* Ícone do Google com SVG colorido */}
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
