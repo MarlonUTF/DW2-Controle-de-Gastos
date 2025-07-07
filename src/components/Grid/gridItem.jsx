@@ -6,40 +6,40 @@ import {
   FaEdit, 
   FaSave, 
   FaTimes 
-} from "react-icons/fa"; // Ícones para botões e status
-import { format, parseISO, isValid } from 'date-fns'; // Utilitários para data
-import { ptBR } from 'date-fns/locale'; // Locale português brasileiro
-import InputLabel from '@mui/material/InputLabel'; // Componentes MUI para select
+} from "react-icons/fa"; 
+import { format, parseISO, isValid } from 'date-fns'; 
+import { ptBR } from 'date-fns/locale'; 
+import InputLabel from '@mui/material/InputLabel'; 
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import AlertComponent from "../Utilitarios/alert"; // Componente customizado para alertas
+import AlertComponent from "../Utilitarios/alert"; 
 
 export default function GridItem({ item, onDelete, onEdit }) {
-  const [isEditing, setIsEditing] = useState(false); // Estado para controlar modo edição
-  const [editedItem, setEditedItem] = useState({ ...item }); // Estado para dados editáveis
+  const [isEditing, setIsEditing] = useState(false); 
+  const [editedItem, setEditedItem] = useState({ ...item }); 
   
-  // Estados para controle de alertas (mensagens)
+  
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
-  // Atualiza o estado editável sempre que o prop `item` mudar
+  
   useEffect(() => {
     setEditedItem({ ...item });
   }, [item]);
 
-  // Função para formatar a data exibida na tabela
+  
   const formatDate = (dateValue) => {
     try {
-      if (!dateValue) return 'Sem data'; // Caso valor vazio ou nulo
+      if (!dateValue) return 'Sem data'; 
       
       let date = dateValue;
-      if (typeof dateValue === 'string') { // Converte string ISO para Date
+      if (typeof dateValue === 'string') { 
         date = parseISO(dateValue);
       }
       
-      // Se data válida, formata para dd/MM/yyyy, caso contrário mostra erro
+     
       return isValid(date) ? 
         format(date, 'dd/MM/yyyy', { locale: ptBR }) : 
         'Data inválida';
@@ -49,7 +49,7 @@ export default function GridItem({ item, onDelete, onEdit }) {
     }
   };
 
-  // Converte a data para formato padrão de input do tipo date (yyyy-MM-dd)
+ 
   const toDateInputValue = (dateValue) => {
     try {
       if (!dateValue) return '';
@@ -68,7 +68,7 @@ export default function GridItem({ item, onDelete, onEdit }) {
     }
   };
 
-  // Atualiza os dados editados conforme o usuário digita ou seleciona
+  
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditedItem(prev => ({ 
@@ -77,17 +77,17 @@ export default function GridItem({ item, onDelete, onEdit }) {
     }));
   };
 
-  // Quando a categoria é alterada, atualiza a categoria e reseta subcategoria se não for alimentação
+  
   const handleCategoriaChange = (event) => {
     const value = event.target.value;
     setEditedItem(prev => ({ 
       ...prev, 
       categoria: value,
-      ...(value !== 'alimentacao' && { subCategoria: '' }) // Limpa subcategoria se não for alimentação
+      ...(value !== 'alimentacao' && { subCategoria: '' })
     }));
   };
 
-  // Atualiza subcategoria selecionada
+  
   const handleSubCategoriaChange = (event) => {
     setEditedItem(prev => ({ 
       ...prev, 
@@ -95,9 +95,9 @@ export default function GridItem({ item, onDelete, onEdit }) {
     }));
   };
 
-  // Salva as alterações após validação dos campos
+  
   const handleSave = () => {
-    // Validações com alertas
+   
     if (!editedItem.desc?.trim()) {
       setAlertMessage("Informe a descrição!");
       setAlertSeverity("warning");
@@ -126,7 +126,7 @@ export default function GridItem({ item, onDelete, onEdit }) {
       return;
     }
 
-    // Prepara objeto final para salvar convertendo os tipos
+    
     const finalItem = {
       ...editedItem,
       amount: parseFloat(editedItem.amount),
@@ -135,16 +135,16 @@ export default function GridItem({ item, onDelete, onEdit }) {
         editedItem.data
     };
     
-    onEdit(finalItem);    // Chama callback para atualizar
-    setIsEditing(false);  // Sai do modo edição
+    onEdit(finalItem);   
+    setIsEditing(false); 
 
-    // Alerta de sucesso
+    
     setAlertMessage("Transação atualizada com sucesso!");
     setAlertSeverity("success");
     setAlertOpen(true);
   };
 
-  // Cancela a edição, voltando ao estado original
+  
   const handleCancel = () => {
     setEditedItem(item);
     setIsEditing(false);

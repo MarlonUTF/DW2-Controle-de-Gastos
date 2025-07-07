@@ -9,32 +9,30 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 
 export default function Form({ handleAdd }) {
-  // Estado para descrição da transação
+  
   const [desc, setDesc] = useState("");
-  // Estado para valor da transação (string para controlar input)
+  
   const [amount, setAmount] = useState("");
-  // Data atual no formato YYYY-MM-DD para input date
+  
   const today = new Date().toISOString().split("T")[0];
-  // Estado para a data da transação
+  
   const [data, setData] = useState(today);
-  // Estado booleano para tipo de transação: true = despesa, false = entrada
   const [isExpense, setExpense] = useState(true);
   
-  // Estado para categoria, que guarda o valor e tipo ('despesa' ou 'entrada')
   const [categoria, setCategoria] = useState({
     value: '',
-    type: 'despesa' // padrão inicial
+    type: 'despesa' 
   });
   
-  // Estado para subcategoria (usada só para categoria 'alimentacao' em despesas)
+  
   const [subCategoria, setSubCategoria] = useState('');
 
-  // Estados para controlar o alerta (mensagem, tipo e visibilidade)
+  
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("error");
 
-  // Atualiza o tipo de categoria sempre que o tipo da transação muda
+  
   useEffect(() => {
     setCategoria(prev => ({
       ...prev,
@@ -42,7 +40,7 @@ export default function Form({ handleAdd }) {
     }));
   }, [isExpense]);
 
-  // Atualiza o valor da categoria mantendo o tipo
+  
   const handleSetCategoria = (value) => {
     setCategoria(prev => ({
       ...prev,
@@ -50,19 +48,19 @@ export default function Form({ handleAdd }) {
     }));
   };
 
-  // Gera um ID único simples usando timestamp + número aleatório
+  
   function generateID() {
     return Date.now() + Math.floor(Math.random() * 1000);
   }
 
-  // Função chamada ao clicar no botão ADICIONAR
+  
   function handleSave() {
-    // Validações dos campos obrigatórios
+    
     if (!desc.trim()) {
       setAlertMessage("Informe a descrição!");
       setAlertSeverity("warning");
       setAlertOpen(true);
-      return; // interrompe a função se inválido
+      return; 
     }
     
     if (!amount || Number(amount) <= 0) {
@@ -79,7 +77,7 @@ export default function Form({ handleAdd }) {
       return;
     }
     
-    // Se for despesa e categoria alimentação, subcategoria é obrigatória
+    
     if (isExpense && categoria.value === 'alimentacao' && !subCategoria) {
       setAlertMessage("Selecione uma Sub Categoria!");
       setAlertSeverity("warning");
@@ -87,22 +85,22 @@ export default function Form({ handleAdd }) {
       return;
     }
 
-    // Monta o objeto transação para enviar ao componente pai
+    
     const transaction = {
       id: generateID(),
       desc: desc,
-      amount: Number(amount),   // converte valor para número
-      data: data,               // mantém data como string no formato yyyy-mm-dd
-      expense: isExpense,       // true para despesa, false para entrada
+      amount: Number(amount),   
+      data: data,               
+      expense: isExpense,       
       categoria: categoria.value,
-      // Subcategoria definida só para alimentação em despesas, senão null
+      
       subCategoria: (isExpense && categoria.value === 'alimentacao') ? subCategoria : null
     };
 
-    // Chama função passada via props para adicionar a transação
+    
     handleAdd(transaction);
 
-    // Reseta os estados do formulário para valores iniciais
+    
     setDesc("");
     setAmount("");
     setData(today);
@@ -110,7 +108,7 @@ export default function Form({ handleAdd }) {
     setCategoria({ value: '', type: 'despesa' });
     setSubCategoria('');
 
-    // Exibe alerta de sucesso
+    
     setAlertMessage("Transação adicionada com sucesso!");
     setAlertSeverity("success");
     setAlertOpen(true);
