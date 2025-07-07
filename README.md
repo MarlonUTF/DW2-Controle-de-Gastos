@@ -62,5 +62,7 @@ Cada documento representa uma transação e possui os seguintes campos:
 Agradecimento aos canais [DD Solutions](https://www.youtube.com/@dd.solutions), [Willionário](https://www.youtube.com/@willionarios) e [Hora de Codar](https://www.youtube.com/@MatheusBattisti) do youtube, onde conseguimos aprender mais sobre firebase, CRUD no react e React Router, para assim aplicar essas tecnologias em nosso projeto
 
 [Playlist do curso gratuito de firebase](https://www.youtube.com/playlist?list=PLba0a0QETkxzriEtyz2HfO-iQOQ7Ge_rO)
+
 [Video de um projeto de finanças feito em react](https://www.youtube.com/watch?v=pj4vA67olbU)
+
 [Aula de como utilizar o React Router ]()
